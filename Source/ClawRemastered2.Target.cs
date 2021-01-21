@@ -3,12 +3,12 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class ClawRemasteredTarget : TargetRules
+public class ClawRemastered2Target : TargetRules
 {
-	public ClawRemasteredTarget(TargetInfo Target) : base(Target)
+	public ClawRemastered2Target(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.Add("ClawRemastered");
+		ExtraModuleNames.Add("ClawRemastered2");
 	}
 }

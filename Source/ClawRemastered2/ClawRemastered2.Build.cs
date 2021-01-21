@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class ClawRemastered : ModuleRules
+public class ClawRemastered2 : ModuleRules
 {
-	public ClawRemastered(ReadOnlyTargetRules Target) : base(Target)
+	public ClawRemastered2(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 

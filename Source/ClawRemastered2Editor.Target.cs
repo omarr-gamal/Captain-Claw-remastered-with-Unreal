@@ -3,12 +3,12 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-public class ClawRemasteredEditorTarget : TargetRules
+public class ClawRemastered2EditorTarget : TargetRules
 {
-	public ClawRemasteredEditorTarget(TargetInfo Target) : base(Target)
+	public ClawRemastered2EditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.Add("ClawRemastered");
+		ExtraModuleNames.Add("ClawRemastered2");
 	}
 }

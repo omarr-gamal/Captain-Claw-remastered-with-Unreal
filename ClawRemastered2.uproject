@@ -5,7 +5,7 @@
 	"Description": "",
 	"Modules": [
 		{
-			"Name": "ClawRemastered",
+			"Name": "ClawRemastered2",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

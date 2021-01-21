@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "ClawRemasteredGameMode.generated.h"
+#include "ClawRemastered2GameMode.generated.h"
 
 /**
  * The GameMode defines the game being played. It governs the game rules, scoring, what actors
  * are allowed to exist in this game type, and who may enter the game.
  *
- * This game mode just sets the default pawn to be the MyCharacter asset, which is a subclass of ClawRemasteredCharacter
+ * This game mode just sets the default pawn to be the MyCharacter asset, which is a subclass of ClawRemastered2Character
  */
 UCLASS(minimalapi)
-class AClawRemasteredGameMode : public AGameModeBase
+class AClawRemastered2GameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
-	AClawRemasteredGameMode();
+	AClawRemastered2GameMode();
 };

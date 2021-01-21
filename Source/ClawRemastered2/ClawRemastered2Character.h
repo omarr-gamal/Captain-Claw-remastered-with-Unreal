@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "PaperCharacter.h"
-#include "ClawRemasteredCharacter.generated.h"
+#include "ClawRemastered2Character.generated.h"
 
 class UTextRenderComponent;
 
 /**
- * This class is the default character for ClawRemastered, and it is responsible for all
+ * This class is the default character for ClawRemastered2, and it is responsible for all
  * physical interaction between the player and the world.
  *
  * The capsule component (inherited from ACharacter) handles collision with the world
@@ -17,7 +17,7 @@ class UTextRenderComponent;
  * The Sprite component (inherited from APaperCharacter) handles the visuals
  */
 UCLASS(config=Game)
-class AClawRemasteredCharacter : public APaperCharacter
+class AClawRemastered2Character : public APaperCharacter
 {
 	GENERATED_BODY()
 
@@ -59,7 +59,7 @@ protected:
 	// End of APawn interface
 
 public:
-	AClawRemasteredCharacter();
+	AClawRemastered2Character();
 
 	/** Returns SideViewCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }

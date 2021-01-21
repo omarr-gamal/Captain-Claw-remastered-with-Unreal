@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "ClawRemasteredCharacter.h"
+#include "ClawRemastered2Character.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -13,9 +13,9 @@
 DEFINE_LOG_CATEGORY_STATIC(SideScrollerCharacter, Log, All);
 
 //////////////////////////////////////////////////////////////////////////
-// AClawRemasteredCharacter
+// AClawRemastered2Character
 
-AClawRemasteredCharacter::AClawRemasteredCharacter()
+AClawRemastered2Character::AClawRemastered2Character()
 {
 	// Use only Yaw from the controller and ignore the rest of the rotation.
 	bUseControllerRotationPitch = false;
@@ -79,7 +79,7 @@ AClawRemasteredCharacter::AClawRemasteredCharacter()
 //////////////////////////////////////////////////////////////////////////
 // Animation
 
-void AClawRemasteredCharacter::UpdateAnimation()
+void AClawRemastered2Character::UpdateAnimation()
 {
 	const FVector PlayerVelocity = GetVelocity();
 	const float PlayerSpeedSqr = PlayerVelocity.SizeSquared();
@@ -92,7 +92,7 @@ void AClawRemasteredCharacter::UpdateAnimation()
 	}
 }
 
-void AClawRemasteredCharacter::Tick(float DeltaSeconds)
+void AClawRemastered2Character::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	
@@ -103,18 +103,18 @@ void AClawRemasteredCharacter::Tick(float DeltaSeconds)
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AClawRemasteredCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void AClawRemastered2Character::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Note: the 'Jump' action and the 'MoveRight' axis are bound to actual keys/buttons/sticks in DefaultInput.ini (editable from Project Settings..Input)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AClawRemasteredCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AClawRemastered2Character::MoveRight);
 
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AClawRemasteredCharacter::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AClawRemasteredCharacter::TouchStopped);
+	PlayerInputComponent->BindTouch(IE_Pressed, this, &AClawRemastered2Character::TouchStarted);
+	PlayerInputComponent->BindTouch(IE_Released, this, &AClawRemastered2Character::TouchStopped);
 }
 
-void AClawRemasteredCharacter::MoveRight(float Value)
+void AClawRemastered2Character::MoveRight(float Value)
 {
 	/*UpdateChar();*/
 
@@ -122,19 +122,19 @@ void AClawRemasteredCharacter::MoveRight(float Value)
 	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
 }
 
-void AClawRemasteredCharacter::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AClawRemastered2Character::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
 	// Jump on any touch
 	Jump();
 }
 
-void AClawRemasteredCharacter::TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AClawRemastered2Character::TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
 	// Cease jumping once touch stopped
 	StopJumping();
 }
 
-void AClawRemasteredCharacter::UpdateCharacter()
+void AClawRemastered2Character::UpdateCharacter()
 {
 	// Update animation to match the motion
 	UpdateAnimation();
