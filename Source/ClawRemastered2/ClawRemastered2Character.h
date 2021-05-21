@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "PaperCharacter.h"
+#include "HealthComponent.h"
+#include "Components/BoxComponent.h"
 #include "ClawRemastered2Character.generated.h"
 
 class UTextRenderComponent;
@@ -40,13 +42,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* IdleAnimation;
 
-	// The animation to play while idle (standing still)
+	// The animation to play while jumping
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* JumpingAnimation;
 
-	// The animation to play while idle (standing still)
+	// The animation to play while swording
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* SwordingAnimation;
+
+	// The animation to play while getting hurt
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* HurtAnimation;
+
+	// The animation to play after death
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* DeadAnimation;
 
 	/** Called to choose the correct animation to play based on the character's movement state */
 	void UpdateAnimation();
@@ -55,8 +65,13 @@ protected:
 	void MoveRight(float Value);
 
 	void StartSwording();
-
 	void StopSwording();
+
+	void StartDamaging();
+	void StopDamaging();
+
+	void StartHurt();
+	void StopHurt();
 
 	void UpdateCharacter();
 
@@ -70,7 +85,10 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
-	bool isSwording = false;
+
+	bool isHurt = false;
+	bool isDead = false;
+	bool isSwording = false; 
 
 public:
 	AClawRemastered2Character();
@@ -79,4 +97,14 @@ public:
 	FORCEINLINE class UCameraComponent* GetSideViewCameraComponent() const { return SideViewCameraComponent; }
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+
+	UHealthComponent* ClawHealth;
+
+	UPROPERTY(EditDefaultsOnly, Category = Damage)
+	TSubclassOf<UDamageType> DamageType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UBoxComponent* attackCollisionBox;
+
+	void HandleDeath();
 };
