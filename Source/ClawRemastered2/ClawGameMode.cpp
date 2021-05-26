@@ -17,6 +17,19 @@ void AClawGameMode::ActorDied(AActor* DeadActor)
 }
 
 
+void AClawGameMode::AddScore(int64 AdditionlaScore)
+{
+	PlayerScore += AdditionlaScore;
+	UE_LOG(LogTemp, Warning, TEXT("score is: %i"), PlayerScore);
+}
+
+
+int64 AClawGameMode::GetScore()
+{
+	return PlayerScore;
+}
+
+
 void AClawGameMode::HandleGameOver(bool PlayerWon)
 {
 	// to be implemented in the future
