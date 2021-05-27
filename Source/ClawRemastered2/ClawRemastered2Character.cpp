@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnemyCharacter.h"
+#include "ClawBullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 
@@ -149,6 +150,7 @@ void AClawRemastered2Character::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AClawRemastered2Character::MoveRight);
 	PlayerInputComponent->BindAction("Sword", IE_Pressed, this, &AClawRemastered2Character::StartSwording);
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AClawRemastered2Character::StartPistoling);
 
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AClawRemastered2Character::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AClawRemastered2Character::TouchStopped);
@@ -229,6 +231,19 @@ void AClawRemastered2Character::StopDamaging()
 			break;
 		}
 	}
+}
+
+void AClawRemastered2Character::StartPistoling()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("pistoling"));
+	if (BulletRef)
+	{
+
+	}
+}
+
+void AClawRemastered2Character::StopPistoling()
+{
 }
 
 
