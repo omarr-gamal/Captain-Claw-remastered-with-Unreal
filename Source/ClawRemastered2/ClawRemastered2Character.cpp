@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "EnemyCharacter.h"
+#include "ClawBullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 
@@ -67,12 +68,6 @@ AClawRemastered2Character::AClawRemastered2Character()
 	// behavior on the edge of a ledge versus inclines by setting this to true or false
 	GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
 
-    // 	TextComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("IncarGear"));
-    // 	TextComponent->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
-    // 	TextComponent->SetRelativeLocation(FVector(35.0f, 5.0f, 20.0f));
-    // 	TextComponent->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-    // 	TextComponent->SetupAttachment(RootComponent);
-
 	ClawHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 	// initializes the enemy's box collision 
@@ -80,6 +75,9 @@ AClawRemastered2Character::AClawRemastered2Character()
 	attackCollisionBox->SetBoxExtent(FVector(32.0f, 32.0f, 32.0f));
 	attackCollisionBox->SetCollisionProfileName("Trigger");
 	attackCollisionBox->SetupAttachment(RootComponent); 
+
+	BulletSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("Bullet Spawn Point"));
+	BulletSpawnLocation->SetupAttachment(RootComponent);
 
 	// Enable replication on the Sprite component so animations show up when networked
 	GetSprite()->SetIsReplicated(true);
@@ -105,12 +103,14 @@ void AClawRemastered2Character::UpdateAnimation()
 	}
 	else if (GetCharacterMovement()->IsFalling()) {
 		// if falling then render falling animation.
-		// UE_LOG(LogTemp, Warning, TEXT("Text"));
 		DesiredAnimation = JumpingAnimation;
 	}
 	else if (isSwording) {
 		// if swording then render the sword animation.
 		DesiredAnimation = SwordingAnimation;
+	}
+	else if (isPistoling) {
+		DesiredAnimation = PistolingAnimation;
 	}
 	else {
 		// else render running or idle animation
@@ -132,6 +132,12 @@ void AClawRemastered2Character::Tick(float DeltaSeconds)
 		HandleDeath();
 	}
 
+	if (currentHealth != ClawHealth->GetHealth()) {
+		StartHurt();
+
+		currentHealth = ClawHealth->GetHealth();
+	}
+
 	UpdateCharacter();
 }
 
@@ -146,6 +152,7 @@ void AClawRemastered2Character::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AClawRemastered2Character::MoveRight);
 	PlayerInputComponent->BindAction("Sword", IE_Pressed, this, &AClawRemastered2Character::StartSwording);
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AClawRemastered2Character::StartPistoling);
 
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AClawRemastered2Character::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AClawRemastered2Character::TouchStopped);
@@ -166,51 +173,17 @@ void AClawRemastered2Character::StartSwording()
 	{
 		isSwording = true;
 
-		if (GetActorRotation().Yaw >= 0)
-		{
-			//SetActorLocation(GetActorLocation() + FVector(10.0f, 0.0f, 0.0f));
-			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(43.0f, 0.0f, 0.0f));
-		}
-		else 
-		{
-			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(-43.0f, 0.0f, 0.0f));
-		}
-		
-		StartDamaging();
+		FixAnimationChangeOffset(43.0, true); 
 
 		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopSwording, 0.6f, false);
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
 
 		//GetCharacterMovement()->StopMovementImmediately();
 		GetCharacterMovement()->DisableMovement();
 	}
 }
 
-// called when the timer for the swording animation ends
-void AClawRemastered2Character::StopSwording()
-{
-	isSwording = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
-	if (GetActorRotation().Yaw >= 0)
-	{
-		//SetActorLocation(GetActorLocation() + FVector(10.0f, 0.0f, 0.0f));
-		GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(-43.0f, 0.0f, 0.0f));
-	}
-	else
-	{
-		GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(43.0f, 0.0f, 0.0f));
-	}
-}
-
-// somehow this method gets called twice for a single hit.
-void AClawRemastered2Character::StartDamaging()
-{
-	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopDamaging, 0.3f, false);
-}
-
-void AClawRemastered2Character::StopDamaging()
+void AClawRemastered2Character::DealDamage()
 {
 	TSet<AActor*> OverlappingActors;
 
@@ -226,22 +199,77 @@ void AClawRemastered2Character::StopDamaging()
 			break;
 		}
 	}
+
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopSwording, 0.3f, false);
+}
+
+// called when the timer for the swording animation ends
+void AClawRemastered2Character::StopSwording()
+{
+	isSwording = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	FixAnimationChangeOffset(43.0, false);
+}
+
+
+void AClawRemastered2Character::StartPistoling()
+{
+	if (isPistoling == false && GetCharacterMovement()->IsFalling() == false)
+	{
+		isPistoling = true;
+
+		FixAnimationChangeOffset(43.0, true);
+
+		FTimerHandle UnusedHandle;
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
+
+		GetCharacterMovement()->DisableMovement();
+	}
+}
+
+void AClawRemastered2Character::SpawnBullet()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("pistoling"));
+	if (BulletClass)
+	{
+		FRotator SpawnRotation = GetActorRotation();
+		FVector SpawnLocation;
+
+		if (GetActorRotation().Yaw >= 0) SpawnLocation = GetActorLocation() + FVector(70.0, 0.0f, 25.0f);
+		else SpawnLocation = GetActorLocation() + FVector(-70.0, 0.0f, 25.0f);
+
+		GetWorld()->SpawnActor<AClawBullet>(BulletClass, SpawnLocation, SpawnRotation);
+	}
+
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopPistoling, 0.45f, false);
+}
+
+void AClawRemastered2Character::StopPistoling()
+{
+	isPistoling = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	FixAnimationChangeOffset(43.0, false);
 }
 
 
 // start hurt and stop hurt are implemented but not used yet. I realised it would 
-// require either a major refactor of the entire project or very nasty code to use them.
 void AClawRemastered2Character::StartHurt()
 {
 	isHurt = true;
+	GetCharacterMovement()->DisableMovement();
 
 	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopHurt, 0.1f, false);
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopHurt, 0.2f, false);
 }
 
 void AClawRemastered2Character::StopHurt()
 {
 	isHurt = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void AClawRemastered2Character::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
@@ -274,6 +302,34 @@ void AClawRemastered2Character::UpdateCharacter()
 		else if (TravelDirection > 0.0f)
 		{
 			Controller->SetControlRotation(FRotator(0.0f, 0.0f, 0.0f));
+		}
+	}
+}
+
+void AClawRemastered2Character::FixAnimationChangeOffset(float offset, bool animationBegin)
+{
+	if (animationBegin)
+	{
+		if (GetActorRotation().Yaw >= 0)
+		{
+			//SetActorLocation(GetActorLocation() + FVector(10.0f, 0.0f, 0.0f));
+			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(offset, 0.0f, 0.0f));
+		}
+		else
+		{
+			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(-offset, 0.0f, 0.0f));
+		}
+	}
+	else
+	{
+		if (GetActorRotation().Yaw >= 0)
+		{
+			//SetActorLocation(GetActorLocation() + FVector(10.0f, 0.0f, 0.0f));
+			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(-offset, 0.0f, 0.0f));
+		}
+		else
+		{
+			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(offset, 0.0f, 0.0f));
 		}
 	}
 }

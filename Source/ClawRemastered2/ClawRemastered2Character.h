@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "PaperCharacter.h"
 #include "HealthComponent.h"
+#include "ClawBullet.h"
 #include "Components/BoxComponent.h"
+#include "PaperSpriteActor.h"
 #include "ClawRemastered2Character.generated.h"
 
 class UTextRenderComponent;
@@ -33,9 +35,18 @@ class AClawRemastered2Character : public APaperCharacter
 
 	UTextRenderComponent* TextComponent;
 	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* BulletSpawnLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APaperSpriteActor> BulletClass;
+
+	void FixAnimationChangeOffset(float offset, bool animationBegin);
+	
 protected:
 	// The animation to play while running around
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Animations)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* RunningAnimation;
 
 	// The animation to play while idle (standing still)
@@ -49,6 +60,10 @@ protected:
 	// The animation to play while swording
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* SwordingAnimation;
+
+	// The animation to play while firing the pistol
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	class UPaperFlipbook* PistolingAnimation;
 
 	// The animation to play while getting hurt
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
@@ -65,10 +80,12 @@ protected:
 	void MoveRight(float Value);
 
 	void StartSwording();
+	void DealDamage();
 	void StopSwording();
 
-	void StartDamaging();
-	void StopDamaging();
+	void StartPistoling();
+	void SpawnBullet();
+	void StopPistoling();
 
 	void StartHurt();
 	void StopHurt();
@@ -89,6 +106,9 @@ protected:
 	bool isHurt = false;
 	bool isDead = false;
 	bool isSwording = false; 
+	bool isPistoling = false; 
+
+	float currentHealth = 100.0f;
 
 public:
 	AClawRemastered2Character();
