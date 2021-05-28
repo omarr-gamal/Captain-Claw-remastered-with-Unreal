@@ -132,6 +132,12 @@ void AClawRemastered2Character::Tick(float DeltaSeconds)
 		HandleDeath();
 	}
 
+	if (currentHealth != ClawHealth->GetHealth()) {
+		StartHurt();
+
+		currentHealth = ClawHealth->GetHealth();
+	}
+
 	UpdateCharacter();
 }
 
@@ -167,35 +173,17 @@ void AClawRemastered2Character::StartSwording()
 	{
 		isSwording = true;
 
-		FixAnimationChangeOffset(43.0, true);
-		
-		StartDamaging();
+		FixAnimationChangeOffset(43.0, true); 
 
 		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopSwording, 0.6f, false);
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
 
 		//GetCharacterMovement()->StopMovementImmediately();
 		GetCharacterMovement()->DisableMovement();
 	}
 }
 
-// called when the timer for the swording animation ends
-void AClawRemastered2Character::StopSwording()
-{
-	isSwording = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
-	FixAnimationChangeOffset(43.0, false);
-}
-
-// somehow this method gets called twice for a single hit.
-void AClawRemastered2Character::StartDamaging()
-{
-	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopDamaging, 0.3f, false);
-}
-
-void AClawRemastered2Character::StopDamaging()
+void AClawRemastered2Character::DealDamage()
 {
 	TSet<AActor*> OverlappingActors;
 
@@ -211,16 +199,34 @@ void AClawRemastered2Character::StopDamaging()
 			break;
 		}
 	}
+
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopSwording, 0.3f, false);
 }
+
+// called when the timer for the swording animation ends
+void AClawRemastered2Character::StopSwording()
+{
+	isSwording = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	FixAnimationChangeOffset(43.0, false);
+}
+
 
 void AClawRemastered2Character::StartPistoling()
 {
-	isPistoling = true;
+	if (isPistoling == false && GetCharacterMovement()->IsFalling() == false)
+	{
+		isPistoling = true;
 
-	FixAnimationChangeOffset(43.0, true);
+		FixAnimationChangeOffset(43.0, true);
 
-	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
+		FTimerHandle UnusedHandle;
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
+
+		GetCharacterMovement()->DisableMovement();
+	}
 }
 
 void AClawRemastered2Character::SpawnBullet()
@@ -243,24 +249,27 @@ void AClawRemastered2Character::SpawnBullet()
 
 void AClawRemastered2Character::StopPistoling()
 {
-	FixAnimationChangeOffset(43.0, false);
 	isPistoling = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+	FixAnimationChangeOffset(43.0, false);
 }
 
 
 // start hurt and stop hurt are implemented but not used yet. I realised it would 
-// require either a major refactor of the entire project or very nasty code to use them.
 void AClawRemastered2Character::StartHurt()
 {
 	isHurt = true;
+	GetCharacterMovement()->DisableMovement();
 
 	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopHurt, 0.1f, false);
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopHurt, 0.2f, false);
 }
 
 void AClawRemastered2Character::StopHurt()
 {
 	isHurt = false;
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 }
 
 void AClawRemastered2Character::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
