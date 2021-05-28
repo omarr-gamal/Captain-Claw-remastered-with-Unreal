@@ -68,12 +68,6 @@ AClawRemastered2Character::AClawRemastered2Character()
 	// behavior on the edge of a ledge versus inclines by setting this to true or false
 	GetCharacterMovement()->bUseFlatBaseForFloorChecks = true;
 
-    // 	TextComponent = CreateDefaultSubobject<UTextRenderComponent>(TEXT("IncarGear"));
-    // 	TextComponent->SetRelativeScale3D(FVector(3.0f, 3.0f, 3.0f));
-    // 	TextComponent->SetRelativeLocation(FVector(35.0f, 5.0f, 20.0f));
-    // 	TextComponent->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-    // 	TextComponent->SetupAttachment(RootComponent);
-
 	ClawHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 	// initializes the enemy's box collision 
@@ -226,10 +220,10 @@ void AClawRemastered2Character::StartPistoling()
 	FixAnimationChangeOffset(43.0, true);
 
 	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopPistoling, 0.3f, false);
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
 }
 
-void AClawRemastered2Character::StopPistoling()
+void AClawRemastered2Character::SpawnBullet()
 {
 	//UE_LOG(LogTemp, Warning, TEXT("pistoling"));
 	if (BulletClass)
@@ -243,8 +237,13 @@ void AClawRemastered2Character::StopPistoling()
 		GetWorld()->SpawnActor<AClawBullet>(BulletClass, SpawnLocation, SpawnRotation);
 	}
 
-	FixAnimationChangeOffset(43.0, false);
+	FTimerHandle UnusedHandle;
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopPistoling, 0.45f, false);
+}
 
+void AClawRemastered2Character::StopPistoling()
+{
+	FixAnimationChangeOffset(43.0, false);
 	isPistoling = false;
 }
 
