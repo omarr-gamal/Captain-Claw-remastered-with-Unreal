@@ -106,6 +106,10 @@ void AClawRemastered2Character::UpdateAnimation()
 		if (GetCharacterMovement()->IsFalling()) {
 			DesiredAnimation = JumpSwordingAnimation;
 		}
+		// using the sword while crouching
+		else if (isCrouching) {
+			DesiredAnimation = CrouchSwordingAnimation;
+		}
 		// using the sword on the ground
 		else {
 			DesiredAnimation = SwordingAnimation;
@@ -116,6 +120,10 @@ void AClawRemastered2Character::UpdateAnimation()
 		if (GetCharacterMovement()->IsFalling()) {
 			DesiredAnimation = JumpPistolingAnimation;
 		}
+		// firing the pistol while crouching
+		else if (isCrouching) {
+			DesiredAnimation = CrouchPistolingAnimation;
+		}
 		// firing the pistol on the ground
 		else {
 			DesiredAnimation = PistolingAnimation;
@@ -124,6 +132,9 @@ void AClawRemastered2Character::UpdateAnimation()
 	else if (GetCharacterMovement()->IsFalling()) {
 		// if falling then render falling animation.
 		DesiredAnimation = JumpingAnimation;
+	}
+	else if (isCrouching) {
+		DesiredAnimation = CrouchingAnimation;
 	}
 	else {
 		// else render running or idle animation
@@ -164,6 +175,8 @@ void AClawRemastered2Character::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AClawRemastered2Character::MoveRight);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AClawRemastered2Character::Crouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AClawRemastered2Character::StopCrouching);
 	PlayerInputComponent->BindAction("Sword", IE_Pressed, this, &AClawRemastered2Character::StartSwording);
 	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AClawRemastered2Character::StartPistoling);
 
@@ -179,14 +192,35 @@ void AClawRemastered2Character::MoveRight(float Value)
 	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
 }
 
+void AClawRemastered2Character::Crouch()
+{
+	if (GetCharacterMovement()->IsFalling() == false)
+	{
+		isCrouching = true;
+		GetCharacterMovement()->DisableMovement();
+
+		FixAnimationChangeOffset(43.0, true);
+	}
+}
+
+void AClawRemastered2Character::StopCrouching()
+{
+	if (isCrouching == true)
+	{
+		isCrouching = false;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+		FixAnimationChangeOffset(43.0, false);
+	}
+}
+
 // starts the timer for the swording animation
 void AClawRemastered2Character::StartSwording()
 {
-	if (isSwording == false)
+	if (isSwording == false && isCrouching == false)
 	{
 		isSwording = true;
 
-		// using the sword on the ground
 		if (GetCharacterMovement()->IsFalling() == false)
 		{
 			FixAnimationChangeOffset(43.0, true);
@@ -241,7 +275,7 @@ void AClawRemastered2Character::StopSwording()
 
 void AClawRemastered2Character::StartPistoling()
 {
-	if (isPistoling == false)
+	if (isPistoling == false && isCrouching == false)
 	{
 		isPistoling = true;
 
