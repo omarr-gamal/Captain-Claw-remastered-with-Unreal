@@ -182,17 +182,29 @@ void AClawRemastered2Character::MoveRight(float Value)
 // starts the timer for the swording animation
 void AClawRemastered2Character::StartSwording()
 {
-	if (isSwording == false && GetCharacterMovement()->IsFalling() == false)
+	if (isSwording == false)
 	{
 		isSwording = true;
 
-		FixAnimationChangeOffset(43.0, true); 
+		// using the sword on the ground
+		if (GetCharacterMovement()->IsFalling() == false)
+		{
+			FixAnimationChangeOffset(43.0, true);
 
-		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
 
-		//GetCharacterMovement()->StopMovementImmediately();
-		GetCharacterMovement()->DisableMovement();
+			//GetCharacterMovement()->StopMovementImmediately();
+			GetCharacterMovement()->DisableMovement();
+		}
+		// using the sword mid air
+		else
+		{
+			FixAnimationChangeOffset(43.0, true);
+
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
+		}
 	}
 }
 
