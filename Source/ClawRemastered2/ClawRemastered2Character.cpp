@@ -101,16 +101,40 @@ void AClawRemastered2Character::UpdateAnimation()
 	else if (isHurt) {
 		DesiredAnimation = HurtAnimation;
 	}
+	else if (isSwording) {
+		// using the sword mid air
+		if (GetCharacterMovement()->IsFalling()) {
+			DesiredAnimation = JumpSwordingAnimation;
+		}
+		// using the sword while crouching
+		else if (isCrouching) {
+			DesiredAnimation = CrouchSwordingAnimation;
+		}
+		// using the sword on the ground
+		else {
+			DesiredAnimation = SwordingAnimation;
+		}
+	}
+	else if (isPistoling) {
+		// firing the pistol mid air
+		if (GetCharacterMovement()->IsFalling()) {
+			DesiredAnimation = JumpPistolingAnimation;
+		}
+		// firing the pistol while crouching
+		else if (isCrouching) {
+			DesiredAnimation = CrouchPistolingAnimation;
+		}
+		// firing the pistol on the ground
+		else {
+			DesiredAnimation = PistolingAnimation;
+		}
+	}
 	else if (GetCharacterMovement()->IsFalling()) {
 		// if falling then render falling animation.
 		DesiredAnimation = JumpingAnimation;
 	}
-	else if (isSwording) {
-		// if swording then render the sword animation.
-		DesiredAnimation = SwordingAnimation;
-	}
-	else if (isPistoling) {
-		DesiredAnimation = PistolingAnimation;
+	else if (isCrouching) {
+		DesiredAnimation = CrouchingAnimation;
 	}
 	else {
 		// else render running or idle animation
@@ -151,6 +175,8 @@ void AClawRemastered2Character::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AClawRemastered2Character::MoveRight);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AClawRemastered2Character::Crouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AClawRemastered2Character::StopCrouching);
 	PlayerInputComponent->BindAction("Sword", IE_Pressed, this, &AClawRemastered2Character::StartSwording);
 	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AClawRemastered2Character::StartPistoling);
 
@@ -166,20 +192,53 @@ void AClawRemastered2Character::MoveRight(float Value)
 	AddMovementInput(FVector(1.0f, 0.0f, 0.0f), Value);
 }
 
+void AClawRemastered2Character::Crouch()
+{
+	if (GetCharacterMovement()->IsFalling() == false)
+	{
+		isCrouching = true;
+		GetCharacterMovement()->DisableMovement();
+
+		FixAnimationChangeOffset(43.0, true);
+	}
+}
+
+void AClawRemastered2Character::StopCrouching()
+{
+	if (isCrouching == true)
+	{
+		isCrouching = false;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+
+		FixAnimationChangeOffset(43.0, false);
+	}
+}
+
 // starts the timer for the swording animation
 void AClawRemastered2Character::StartSwording()
 {
-	if (isSwording == false && GetCharacterMovement()->IsFalling() == false)
+	if (isSwording == false && isCrouching == false)
 	{
 		isSwording = true;
 
-		FixAnimationChangeOffset(43.0, true); 
+		if (GetCharacterMovement()->IsFalling() == false)
+		{
+			FixAnimationChangeOffset(43.0, true);
 
-		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
 
-		//GetCharacterMovement()->StopMovementImmediately();
-		GetCharacterMovement()->DisableMovement();
+			//GetCharacterMovement()->StopMovementImmediately();
+			GetCharacterMovement()->DisableMovement();
+		}
+		// using the sword mid air
+		else
+		{
+			FixAnimationChangeOffset(43.0, true);
+
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
+		}
 	}
 }
 
@@ -216,16 +275,28 @@ void AClawRemastered2Character::StopSwording()
 
 void AClawRemastered2Character::StartPistoling()
 {
-	if (isPistoling == false && GetCharacterMovement()->IsFalling() == false)
+	if (isPistoling == false && isCrouching == false)
 	{
 		isPistoling = true;
 
-		FixAnimationChangeOffset(43.0, true);
+		// firing the pistol on the ground
+		if (GetCharacterMovement()->IsFalling() == false)
+		{
+			FixAnimationChangeOffset(43.0, true);
 
-		FTimerHandle UnusedHandle;
-		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
 
-		GetCharacterMovement()->DisableMovement();
+			GetCharacterMovement()->DisableMovement();
+		}
+		// firing the pistol mid air
+		else 
+		{
+			FixAnimationChangeOffset(43.0, true);
+
+			FTimerHandle UnusedHandle;
+			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.2f, false);
+		}
 	}
 }
 
@@ -240,11 +311,22 @@ void AClawRemastered2Character::SpawnBullet()
 		if (GetActorRotation().Yaw >= 0) SpawnLocation = GetActorLocation() + FVector(70.0, 0.0f, 25.0f);
 		else SpawnLocation = GetActorLocation() + FVector(-70.0, 0.0f, 25.0f);
 
+		if (GetCharacterMovement()->IsFalling() == true) {
+			SpawnLocation += FVector(0.0, 0.0f, -20.0f);
+		}
+
 		GetWorld()->SpawnActor<AClawBullet>(BulletClass, SpawnLocation, SpawnRotation);
 	}
 
-	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopPistoling, 0.45f, false);
+	if (GetCharacterMovement()->IsFalling()) {
+		FTimerHandle UnusedHandle;
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopPistoling, 0.3f, false);
+	}
+	else {
+		FTimerHandle UnusedHandle;
+		GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::StopPistoling, 0.45f, false);
+	}
+	
 }
 
 void AClawRemastered2Character::StopPistoling()
