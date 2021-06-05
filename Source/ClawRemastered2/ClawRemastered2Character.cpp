@@ -10,9 +10,14 @@
 #include "GameFramework/Controller.h"
 #include "EnemyCharacter.h"
 #include "BlueOfficer.h"
+#include "ClawGameMode.h"
 #include "ClawBullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "InputCoreTypes.h"
+#include "HealthComponent.h"
+#include "ClawGameMode.h"
 
 DEFINE_LOG_CATEGORY_STATIC(SideScrollerCharacter, Log, All);
 
@@ -55,10 +60,10 @@ AClawRemastered2Character::AClawRemastered2Character()
 	// Configure character movement
 	GetCharacterMovement()->GravityScale = 2.0f;
 	GetCharacterMovement()->AirControl = 0.80f;
-	GetCharacterMovement()->JumpZVelocity = 1000.f;
+	GetCharacterMovement()->JumpZVelocity = 800.f;
 	GetCharacterMovement()->GroundFriction = 3.0f;
-	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
-	GetCharacterMovement()->MaxFlySpeed = 600.0f;
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f;
+	GetCharacterMovement()->MaxFlySpeed = 500.0f;
 
 	// Lock character motion onto the XZ plane, so the character can't move in or out of the screen
 	GetCharacterMovement()->bConstrainToPlane = true;
@@ -158,9 +163,12 @@ void AClawRemastered2Character::Tick(float DeltaSeconds)
 	}
 
 	if (currentHealth != ClawHealth->GetHealth()) {
-		UGameplayStatics::SpawnSound2D(this, ClawHurtSound, 1.0f, 1.0f, 0.0f);
-		StartHurt();
-
+		if (currentHealth > ClawHealth->GetHealth())
+		{
+			UGameplayStatics::SpawnSound2D(this, ClawHurtSound, 1.0f, 1.0f, 0.0f);
+			StartHurt();
+		} 
+		GameModeRef->OnHealthPaneChanged.Broadcast(ClawHealth->GetHealth());
 		currentHealth = ClawHealth->GetHealth();
 	}
 
@@ -180,10 +188,7 @@ void AClawRemastered2Character::SetupPlayerInputComponent(class UInputComponent*
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AClawRemastered2Character::CrouchClaw);
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AClawRemastered2Character::StopCrouching);
 	PlayerInputComponent->BindAction("Sword", IE_Pressed, this, &AClawRemastered2Character::StartSwording);
-	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AClawRemastered2Character::StartPistoling);
-
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AClawRemastered2Character::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AClawRemastered2Character::TouchStopped);
+	PlayerInputComponent->BindAction("Pistol", IE_Pressed, this, &AClawRemastered2Character::StartPistoling); 
 }
 
 void AClawRemastered2Character::MoveRight(float Value)
@@ -198,10 +203,12 @@ void AClawRemastered2Character::CrouchClaw()
 {
 	if (GetCharacterMovement()->IsFalling() == false)
 	{
-		isCrouching = true;
-		GetCharacterMovement()->DisableMovement();
+		clawCapsuleComponent->SetCapsuleHalfHeight(32.0f);
+		//clawCapsuleComponent->SetRelativeLocation(clawCapsuleComponent->GetRelativeLocation() + FVector(0.0f, 0.0f, -30.0f));
+		//GetSprite()->SetRelativeLocation(GetSprite()->GetRelativeLocation() + FVector(0.0f, 0.0f, 30.0f));
 
-		FixAnimationChangeOffset(43.0, true);
+		isCrouching = true;
+		GetCharacterMovement()->DisableMovement(); 
 	}
 }
 
@@ -209,25 +216,25 @@ void AClawRemastered2Character::StopCrouching()
 {
 	if (isCrouching == true)
 	{
-		isCrouching = false;
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		clawCapsuleComponent->SetCapsuleHalfHeight(52.4f);
+		//clawCapsuleComponent->SetRelativeLocation(clawCapsuleComponent->GetRelativeLocation() + FVector(0.0f, 0.0f, 30.0f));
+		//GetSprite()->SetRelativeLocation(GetSprite()->GetRelativeLocation() + FVector(0.0f, 0.0f, -30.0f));
 
-		FixAnimationChangeOffset(43.0, false);
+		isCrouching = false;
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking); 
 	}
 }
 
 // starts the timer for the swording animation
 void AClawRemastered2Character::StartSwording()
 {
-	if (isSwording == false && isCrouching == false)
+	if (isSwording == false)
 	{
 		isSwording = true;
 		UGameplayStatics::SpawnSound2D(this, ClawSwordSound, 1.0f, 1.0f, 0.0f);
 
-		if (GetCharacterMovement()->IsFalling() == false)
-		{
-			FixAnimationChangeOffset(43.0, true);
-
+		if (GetCharacterMovement()->IsFalling() == false || isCrouching == true)
+		{ 
 			FTimerHandle UnusedHandle;
 			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
 
@@ -236,9 +243,7 @@ void AClawRemastered2Character::StartSwording()
 		}
 		// using the sword mid air
 		else
-		{
-			FixAnimationChangeOffset(43.0, true);
-
+		{ 
 			FTimerHandle UnusedHandle;
 			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::DealDamage, 0.3f, false);
 		}
@@ -270,23 +275,19 @@ void AClawRemastered2Character::DealDamage()
 void AClawRemastered2Character::StopSwording()
 {
 	isSwording = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
-	FixAnimationChangeOffset(43.0, false);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking); 
 }
 
 
 void AClawRemastered2Character::StartPistoling()
 {
-	if (isPistoling == false && isCrouching == false)
+	if (isPistoling == false)
 	{
 		isPistoling = true;
 
 		// firing the pistol on the ground
 		if (GetCharacterMovement()->IsFalling() == false)
-		{
-			FixAnimationChangeOffset(43.0, true);
-
+		{ 
 			FTimerHandle UnusedHandle;
 			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.3f, false);
 
@@ -294,9 +295,7 @@ void AClawRemastered2Character::StartPistoling()
 		}
 		// firing the pistol mid air
 		else 
-		{
-			FixAnimationChangeOffset(43.0, true);
-
+		{ 
 			FTimerHandle UnusedHandle;
 			GetWorldTimerManager().SetTimer(UnusedHandle, this, &AClawRemastered2Character::SpawnBullet, 0.2f, false);
 		}
@@ -322,6 +321,10 @@ void AClawRemastered2Character::SpawnBullet()
 
 			if (GetCharacterMovement()->IsFalling() == true) {
 				SpawnLocation += FVector(0.0, 0.0f, -20.0f);
+			} 
+			else if (isCrouching == true)
+			{
+				SpawnLocation += FVector(0.0, 0.0f, -40.0f);
 			}
 
 			GetWorld()->SpawnActor<AClawBullet>(BulletClass, SpawnLocation, SpawnRotation);
@@ -346,9 +349,7 @@ void AClawRemastered2Character::SpawnBullet()
 void AClawRemastered2Character::StopPistoling()
 {
 	isPistoling = false;
-	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-
-	FixAnimationChangeOffset(43.0, false);
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking); 
 }
 
 
@@ -366,18 +367,6 @@ void AClawRemastered2Character::StopHurt()
 {
 	isHurt = false;
 	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-}
-
-void AClawRemastered2Character::TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	// Jump on any touch
-	Jump();
-}
-
-void AClawRemastered2Character::TouchStopped(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	// Cease jumping once touch stopped
-	StopJumping();
 }
 
 void AClawRemastered2Character::UpdateCharacter()
@@ -402,32 +391,13 @@ void AClawRemastered2Character::UpdateCharacter()
 	}
 }
 
-void AClawRemastered2Character::FixAnimationChangeOffset(float offset, bool animationBegin)
+void AClawRemastered2Character::BeginPlay()
 {
-	if (animationBegin)
-	{
-		if (GetActorRotation().Yaw >= 0)
-		{
-			//SetActorLocation(GetActorLocation() + FVector(10.0f, 0.0f, 0.0f));
-			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(offset, 0.0f, 0.0f));
-		}
-		else
-		{
-			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(-offset, 0.0f, 0.0f));
-		}
-	}
-	else
-	{
-		if (GetActorRotation().Yaw >= 0)
-		{
-			//SetActorLocation(GetActorLocation() + FVector(10.0f, 0.0f, 0.0f));
-			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(-offset, 0.0f, 0.0f));
-		}
-		else
-		{
-			GetSprite()->SetWorldLocation(GetSprite()->GetComponentLocation() + FVector(offset, 0.0f, 0.0f));
-		}
-	}
+	Super::BeginPlay();
+
+	GameModeRef = Cast<AClawGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	clawCapsuleComponent = Cast<UCapsuleComponent>(RootComponent);
 }
 
 void AClawRemastered2Character::HandleDeath()
@@ -439,6 +409,10 @@ void AClawRemastered2Character::HandleDeath()
 
 	//TODO: Disable Claw movement and make him fall 
 	//SetActorLocation(ClawLocation + FVector(0.0f, 1.0f, 0.0f));
-
+	GameModeRef->HandleGameOver(false);
 	UGameplayStatics::SpawnSound2D(this, ClawDeathSound, 1.0f, 1.0f, 0.0f);
+
+	// disable claw's movement and input
+	this->TurnOff();
+	this->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
