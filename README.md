@@ -1,5 +1,5 @@
 # Captain-Claw-remastered-with-Unreal
-A remaster of Monolith's 1997 Captain Claw game using Unreal Engine 4.26.2 written in C++ and focusses on Object Oriented Design.
+A remaster of Monolith's 1997 Captain Claw game using Unreal Engine 4.26.2 written in C++ and focusses on Object Oriented Design principles.
 
 ## Videos
 
