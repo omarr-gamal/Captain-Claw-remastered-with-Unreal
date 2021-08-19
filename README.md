@@ -9,9 +9,6 @@ https://user-images.githubusercontent.com/69029045/126821051-a2dfe747-9f05-499e-
 ## Screenshots
 ![vlcsnap-2021-08-19-10h46m07s599](https://user-images.githubusercontent.com/69029045/130039782-bac76bf8-b125-4ae4-941b-943c014660e5.png)
 
-![vlcsnap-2021-08-19-10h47m18s627](https://user-ima![vlcsnap-2021-08-19-10h49m46s322](https://user-images.githubusercontent.com/69029045/130040052-de7652b8-7949-4cab-bd72-5abaa5cf9918.png)
-ges.githubusercontent.com/69029045/130039835-56b9b574-a75e-4911-81e8-8ae3c2e3844b.png)
-
 ![vlcsnap-2021-08-19-10h49m01s501](https://user-images.githubusercontent.com/69029045/130039919-0f498c39-7fca-4635-8777-8afdcf5f4d4e.png)
 
 ![vlcsnap-2021-08-19-10h50m12s594](https://user-images.githubusercontent.com/69029045/130040136-f10be40d-c400-44b7-8e99-95c54d59c7b0.png)
