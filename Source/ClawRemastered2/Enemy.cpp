@@ -45,6 +45,18 @@ AEnemy::AEnemy()
 	//UE_LOG(LogTemp, Warning, TEXT("swording"));
 
 	OfficerHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	OfficerIdleSightCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Officer Idle Sight"));
+	OfficerIdleSightCollisionBox->SetBoxExtent(FVector(300.0f, 20.0f, 60.0f));
+	OfficerIdleSightCollisionBox->SetCollisionProfileName("Tr1igger");
+	OfficerIdleSightCollisionBox->SetupAttachment(RootComponent);
+
+	OfficerWalkSightCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Officer Walk Sight"));
+	OfficerWalkSightCollisionBox->SetBoxExtent(FVector(32.0f, 32.0f, 60.0f));
+	OfficerWalkSightCollisionBox->SetCollisionProfileName("Trigger");
+	OfficerWalkSightCollisionBox->SetupAttachment(RootComponent);
+
+	//OfficerSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onClawSpotted);
 }
 
 void AEnemy::BeginPlay()
@@ -126,6 +138,10 @@ void AEnemy::HandleDeath()
 void AEnemy::DestroySelf()
 {
 	this->Destroy();
+}
+
+void AEnemy::onClawSpotted()
+{
 }
 
 

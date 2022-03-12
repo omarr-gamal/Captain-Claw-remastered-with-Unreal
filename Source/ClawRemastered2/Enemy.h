@@ -18,9 +18,6 @@ UCLASS()
 class CLAWREMASTERED2_API AEnemy : public APaperCharacter
 {
 	GENERATED_BODY()
-	
-	virtual void Tick(float DeltaSeconds) override;
-	virtual void BeginPlay();
 
 protected:
 	// The animation to play while idle (standing still)
@@ -39,10 +36,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* DeadAnimation;
 
-	void UpdateCharacter();
 
-	void TurnRight();
-	void TurnLeft(); 
 
 	enum State
 	{
@@ -62,6 +56,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sounds)
 	USoundBase* DeathSound;
 
+	UPROPERTY(EditDefaultsOnly, Category = Damage)
+	TSubclassOf<UDamageType> DamageType;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UBoxComponent* OfficerIdleSightCollisionBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UBoxComponent* OfficerWalkSightCollisionBox;
+
 private:
 	int patrols = 0;
 
@@ -72,19 +76,24 @@ private:
 
 	FTimerHandle EndWalkTimer;
 
+	UHealthComponent* OfficerHealth;
+
 public:
 	AEnemy();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile, meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<APaperSpriteActor> BulletClass;
-
-	UPROPERTY(EditDefaultsOnly, Category = Damage)
-	TSubclassOf<UDamageType> DamageType;
-
-	UHealthComponent* OfficerHealth;
-
 private:
+	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay();
+
 	void HandleDeath();
 
 	void DestroySelf();
+
+protected:
+	virtual void onClawSpotted();
+
+	void UpdateCharacter();
+
+	void TurnRight();
+	void TurnLeft();
 };
