@@ -84,7 +84,7 @@ void AEnemy::UpdateCharacter()
 		{
 			GetSprite()->SetFlipbook(WalkingAnimation);
 
-			GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, 1.5f, false);
+			GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, walkDuration, false);
 			UE_LOG(LogTemp, Warning, TEXT("right"));
 		}
 	}
@@ -109,7 +109,7 @@ void AEnemy::Tick(float DeltaSeconds)
 
 void AEnemy::TurnRight()
 {
-	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, 1.5f, false);
+	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, walkDuration, false);
 	walkDirection *= -1;
 	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
 	UE_LOG(LogTemp, Error, TEXT("turn right"));
@@ -117,7 +117,7 @@ void AEnemy::TurnRight()
 
 void AEnemy::TurnLeft()
 {
-	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, 1.5f, false);
+	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, walkDuration, false);
 	walkDirection *= -1;
 	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
 	UE_LOG(LogTemp, Error, TEXT("turn left"));

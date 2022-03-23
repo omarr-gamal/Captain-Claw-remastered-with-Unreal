@@ -50,6 +50,9 @@ protected:
 
 	float walkDirection;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	float walkDuration = 2.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sounds)
 	USoundBase* FightSound;
 
