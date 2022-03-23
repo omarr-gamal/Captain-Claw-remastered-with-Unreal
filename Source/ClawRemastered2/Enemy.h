@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	float walkDuration = 2.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
+	float idlingDuration = 2.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Sounds)
 	USoundBase* FightSound;
 
@@ -99,4 +102,9 @@ protected:
 
 	void TurnRight();
 	void TurnLeft();
+
+	void UpdateRotation();
+
+	void SetRotationToRight();
+	void SetRotationToLeft();
 };

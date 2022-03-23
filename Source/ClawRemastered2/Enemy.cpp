@@ -66,9 +66,10 @@ void AEnemy::BeginPlay()
 
 	//UE_LOG(LogTemp, Warning, TEXT("beginplay"));
 
-	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
 	currentState = walking;
 	walkDirection = 1.0f;
+
+	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, walkDuration, false);
 }
 
 void AEnemy::UpdateCharacter()
@@ -84,13 +85,15 @@ void AEnemy::UpdateCharacter()
 		{
 			GetSprite()->SetFlipbook(WalkingAnimation);
 
-			GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, walkDuration, false);
 			UE_LOG(LogTemp, Warning, TEXT("right"));
 		}
 	}
-	//else if (currentState == idling) {
-	//	DesiredAnimation = IdleAnimation;
-	//}
+	else if (currentState == idling) {
+		if (CurrentAnimation != IdleAnimation)
+		{
+			GetSprite()->SetFlipbook(IdleAnimation);
+		}
+	}
 	//else if (currentState == dead) {
 	//	DesiredAnimation = DeadAnimation;
 	//}
@@ -105,22 +108,66 @@ void AEnemy::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	UpdateCharacter();
+
+	UpdateRotation();
+
+	UE_LOG(LogTemp, Error, TEXT("Value = %f"), walkDirection);
 }
 
 void AEnemy::TurnRight()
 {
+	currentState = walking;
+
 	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, walkDuration, false);
 	walkDirection *= -1;
-	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
+
 	UE_LOG(LogTemp, Error, TEXT("turn right"));
 }
 
 void AEnemy::TurnLeft()
 {
-	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, walkDuration, false);
-	walkDirection *= -1;
+	patrols++;
+
+	if (patrols == 2) 
+	{
+		patrols = 0;
+
+		currentState = idling;
+		GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, idlingDuration, false);
+
+		UE_LOG(LogTemp, Error, TEXT("start idle"));
+	}
+	else
+	{
+		currentState = walking;
+
+		GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, walkDuration, false);
+		walkDirection *= -1;
+
+		UE_LOG(LogTemp, Error, TEXT("turn left"));
+	}
+}
+
+void AEnemy::UpdateRotation()
+{
+	if (walkDirection == 1) 
+	{
+		SetRotationToRight();
+	}
+	else 
+	{
+		SetRotationToLeft();
+	}
+}
+
+void AEnemy::SetRotationToRight()
+{
+	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
+}
+
+void AEnemy::SetRotationToLeft()
+{
 	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
-	UE_LOG(LogTemp, Error, TEXT("turn left"));
 }
 
 void AEnemy::HandleDeath()
