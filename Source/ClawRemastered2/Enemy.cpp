@@ -88,7 +88,7 @@ void AEnemy::UpdateCharacter()
 		{
 			GetSprite()->SetFlipbook(WalkingAnimation);
 
-			UE_LOG(LogTemp, Warning, TEXT("right"));
+			//UE_LOG(LogTemp, Warning, TEXT("right"));
 		}
 	}
 	else if (currentState == idling) {
@@ -121,7 +121,7 @@ void AEnemy::Tick(float DeltaSeconds)
 	UpdateRotation();
 
 	//UE_LOG(LogTemp, Error, TEXT("Value = %f"), walkDirection);
-	UE_LOG(LogTemp, Error, TEXT("Value = %f"), GetWorldTimerManager().GetTimerRemaining(EndWalkTimer));
+	//UE_LOG(LogTemp, Error, TEXT("Value = %f"), GetWorldTimerManager().GetTimerRemaining(EndWalkTimer));
 }
 
 void AEnemy::OnOverlapBeginIdleSightCollisionBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -167,7 +167,7 @@ void AEnemy::OnOverlapEndWalkSightCollisionBox(UPrimitiveComponent* OverlappedCo
 		//UE_LOG(LogTemp, Error, TEXT("end overlap walk sight"));
 		UpdateToClawCharacterDirection(OtherComp);
 
-	currentState = walking;
+		currentState = walking;
 		GetWorldTimerManager().UnPauseTimer(EndWalkTimer);
 	}
 }
@@ -179,7 +179,7 @@ void AEnemy::TurnRight()
 	GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnLeft, walkDuration, false);
 	walkDirection *= -1;
 
-	UE_LOG(LogTemp, Error, TEXT("turn right"));
+	//UE_LOG(LogTemp, Error, TEXT("turn right"));
 }
 
 void AEnemy::TurnLeft()
@@ -193,7 +193,7 @@ void AEnemy::TurnLeft()
 		currentState = idling;
 		GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, idlingDuration, false);
 
-		UE_LOG(LogTemp, Error, TEXT("start idle"));
+		//UE_LOG(LogTemp, Error, TEXT("start idle"));
 	}
 	else
 	{
@@ -202,13 +202,19 @@ void AEnemy::TurnLeft()
 		GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, walkDuration, false);
 		walkDirection *= -1;
 
-		UE_LOG(LogTemp, Error, TEXT("turn left"));
+		//UE_LOG(LogTemp, Error, TEXT("turn left"));
 	}
 }
 
 void AEnemy::UpdateRotation()
 {
-	if (walkDirection == 1) 
+	float direction = walkDirection;
+	if (currentState == aggroed) 
+	{
+		direction = toClawCharacterDirection;
+	}
+
+	if (direction == 1) 
 	{
 		SetRotationToRight();
 	}
@@ -220,11 +226,12 @@ void AEnemy::UpdateRotation()
 
 void AEnemy::UpdateToClawCharacterDirection(UPrimitiveComponent* clawCapsule)
 {
+	UE_LOG(LogTemp, Error, TEXT("Value = %f"), GetActorLocation().X - clawCapsule->GetComponentLocation().X);
 	if (GetActorLocation().X - clawCapsule->GetComponentLocation().X < 0) {
 		toClawCharacterDirection = 1.0f;
 	}
 	else {
-		toClawCharacterDirection = 1.0f;
+		toClawCharacterDirection = -1.0f;
 	}
 }
 
@@ -257,7 +264,9 @@ void AEnemy::DestroySelf()
 
 void AEnemy::onClawDetected()
 {
-	UE_LOG(LogTemp, Error, TEXT("claw Detected.."));
+	//UE_LOG(LogTemp, Error, TEXT("claw Detected.."));
+
+	AddMovementInput(FVector(toClawCharacterDirection, 0.0f, 0.0f), 1);
 }
 
 
