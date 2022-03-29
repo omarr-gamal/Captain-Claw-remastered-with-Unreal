@@ -226,7 +226,7 @@ void AEnemy::UpdateRotation()
 
 void AEnemy::UpdateToClawCharacterDirection(UPrimitiveComponent* clawCapsule)
 {
-	UE_LOG(LogTemp, Error, TEXT("Value = %f"), GetActorLocation().X - clawCapsule->GetComponentLocation().X);
+	//UE_LOG(LogTemp, Error, TEXT("Value = %f"), GetActorLocation().X - clawCapsule->GetComponentLocation().X);
 	if (GetActorLocation().X - clawCapsule->GetComponentLocation().X < 0) {
 		toClawCharacterDirection = 1.0f;
 	}
