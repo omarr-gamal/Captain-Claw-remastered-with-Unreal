@@ -54,6 +54,7 @@ protected:
 	State currentState;
 
 	float walkDirection;
+	float toClawCharacterDirection;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	float walkDuration = 2.0f;
@@ -113,7 +114,7 @@ private:
 	void DestroySelf();
 
 protected:
-	virtual void onClawSpotted();
+	virtual void onClawDetected();
 
 	void UpdateCharacter();
 
@@ -121,6 +122,7 @@ protected:
 	void TurnLeft();
 
 	void UpdateRotation();
+	void UpdateToClawCharacterDirection(UPrimitiveComponent* clawCapsule);
 
 	void SetRotationToRight();
 	void SetRotationToLeft();

@@ -43,6 +43,7 @@ AEnemy::AEnemy()
 	bReplicates = true;
 
 	//UE_LOG(LogTemp, Warning, TEXT("swording"));
+	OfficerHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 	OfficerIdleSightCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Officer Idle Sight"));
 	OfficerIdleSightCollisionBox->SetBoxExtent(FVector(300.0f, 20.0f, 60.0f));
@@ -53,8 +54,6 @@ AEnemy::AEnemy()
 	OfficerWalkSightCollisionBox->SetBoxExtent(FVector(32.0f, 32.0f, 60.0f));
 	OfficerWalkSightCollisionBox->SetCollisionProfileName("Trigger");
 	OfficerWalkSightCollisionBox->SetupAttachment(RootComponent);
-
-	//OfficerSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onClawSpotted);
 }
 
 void AEnemy::BeginPlay()
@@ -67,8 +66,6 @@ void AEnemy::BeginPlay()
 
 	OfficerWalkSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginWalkSightCollisionBox);
 	OfficerWalkSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndWalkSightCollisionBox);
-
-	OfficerHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 	//UE_LOG(LogTemp, Warning, TEXT("beginplay"));
 
@@ -105,6 +102,7 @@ void AEnemy::UpdateCharacter()
 		{
 			GetSprite()->SetFlipbook(AggroedAnimation);
 		}
+		onClawDetected();
 	}
 	//else if (currentState == dead) {
 	//	DesiredAnimation = DeadAnimation;
@@ -131,6 +129,8 @@ void AEnemy::OnOverlapBeginIdleSightCollisionBox(UPrimitiveComponent* Overlapped
 	if (currentState == idling && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
 	{
 		//UE_LOG(LogTemp, Error, TEXT("begin overlap idle sight"));
+		UpdateToClawCharacterDirection(OtherComp);
+
 		currentState = aggroed;
 		GetWorldTimerManager().PauseTimer(EndWalkTimer);
 	}
@@ -141,6 +141,8 @@ void AEnemy::OnOverlapEndIdleSightCollisionBox(UPrimitiveComponent* OverlappedCo
 	if (currentState == aggroed && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
 	{
 		//UE_LOG(LogTemp, Error, TEXT("end overlap idle sight"));
+		UpdateToClawCharacterDirection(OtherComp);
+
 		currentState = walking;
 		GetWorldTimerManager().UnPauseTimer(EndWalkTimer);
 	}
@@ -151,6 +153,8 @@ void AEnemy::OnOverlapBeginWalkSightCollisionBox(UPrimitiveComponent* Overlapped
 	if (currentState == walking && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
 	{
 		//UE_LOG(LogTemp, Error, TEXT("begin overlap walk sight"));
+		UpdateToClawCharacterDirection(OtherComp);
+
 		currentState = aggroed;
 		GetWorldTimerManager().PauseTimer(EndWalkTimer);
 	}
@@ -161,7 +165,9 @@ void AEnemy::OnOverlapEndWalkSightCollisionBox(UPrimitiveComponent* OverlappedCo
 	if (currentState == aggroed && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
 	{
 		//UE_LOG(LogTemp, Error, TEXT("end overlap walk sight"));
-		currentState = walking;
+		UpdateToClawCharacterDirection(OtherComp);
+
+	currentState = walking;
 		GetWorldTimerManager().UnPauseTimer(EndWalkTimer);
 	}
 }
@@ -212,6 +218,16 @@ void AEnemy::UpdateRotation()
 	}
 }
 
+void AEnemy::UpdateToClawCharacterDirection(UPrimitiveComponent* clawCapsule)
+{
+	if (GetActorLocation().X - clawCapsule->GetComponentLocation().X < 0) {
+		toClawCharacterDirection = 1.0f;
+	}
+	else {
+		toClawCharacterDirection = 1.0f;
+	}
+}
+
 void AEnemy::SetRotationToRight()
 {
 	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
@@ -239,8 +255,9 @@ void AEnemy::DestroySelf()
 	this->Destroy();
 }
 
-void AEnemy::onClawSpotted()
+void AEnemy::onClawDetected()
 {
+	UE_LOG(LogTemp, Error, TEXT("claw Detected.."));
 }
 
 
