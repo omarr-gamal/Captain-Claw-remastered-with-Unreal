@@ -44,8 +44,6 @@ AEnemy::AEnemy()
 
 	//UE_LOG(LogTemp, Warning, TEXT("swording"));
 
-	OfficerHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
 	OfficerIdleSightCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Officer Idle Sight"));
 	OfficerIdleSightCollisionBox->SetBoxExtent(FVector(300.0f, 20.0f, 60.0f));
 	OfficerIdleSightCollisionBox->SetCollisionProfileName("Tr1igger");
@@ -69,6 +67,8 @@ void AEnemy::BeginPlay()
 
 	OfficerWalkSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginWalkSightCollisionBox);
 	OfficerWalkSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndWalkSightCollisionBox);
+
+	OfficerHealth = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 
 	//UE_LOG(LogTemp, Warning, TEXT("beginplay"));
 
