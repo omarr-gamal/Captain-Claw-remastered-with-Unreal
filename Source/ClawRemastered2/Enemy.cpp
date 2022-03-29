@@ -51,16 +51,10 @@ AEnemy::AEnemy()
 	OfficerIdleSightCollisionBox->SetCollisionProfileName("Tr1igger");
 	OfficerIdleSightCollisionBox->SetupAttachment(RootComponent);
 
-	OfficerIdleSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginIdleSightCollisionBox);
-	OfficerIdleSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndIdleSightCollisionBox);
-
 	OfficerWalkSightCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Officer Walk Sight"));
 	OfficerWalkSightCollisionBox->SetBoxExtent(FVector(32.0f, 32.0f, 60.0f));
 	OfficerWalkSightCollisionBox->SetCollisionProfileName("Trigger");
 	OfficerWalkSightCollisionBox->SetupAttachment(RootComponent);
-
-	OfficerWalkSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginWalkSightCollisionBox);
-	OfficerWalkSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndWalkSightCollisionBox);
 
 	//OfficerSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onClawSpotted);
 }
@@ -69,6 +63,12 @@ void AEnemy::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	OfficerIdleSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginIdleSightCollisionBox);
+	OfficerIdleSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndIdleSightCollisionBox);
+
+	OfficerWalkSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginWalkSightCollisionBox);
+	OfficerWalkSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndWalkSightCollisionBox);
 
 	//UE_LOG(LogTemp, Warning, TEXT("beginplay"));
 
@@ -100,6 +100,12 @@ void AEnemy::UpdateCharacter()
 			GetSprite()->SetFlipbook(IdleAnimation);
 		}
 	}
+	else if (currentState == aggroed) {
+		if (CurrentAnimation != AggroedAnimation)
+		{
+			GetSprite()->SetFlipbook(AggroedAnimation);
+		}
+	}
 	//else if (currentState == dead) {
 	//	DesiredAnimation = DeadAnimation;
 	//}
@@ -107,7 +113,6 @@ void AEnemy::UpdateCharacter()
 	//	DesiredAnimation = HurtAnimation;
 	//}
 }
-
 
 void AEnemy::Tick(float DeltaSeconds)
 {
@@ -117,23 +122,48 @@ void AEnemy::Tick(float DeltaSeconds)
 
 	UpdateRotation();
 
-	UE_LOG(LogTemp, Error, TEXT("Value = %f"), walkDirection);
+	//UE_LOG(LogTemp, Error, TEXT("Value = %f"), walkDirection);
+	UE_LOG(LogTemp, Error, TEXT("Value = %f"), GetWorldTimerManager().GetTimerRemaining(EndWalkTimer));
 }
 
 void AEnemy::OnOverlapBeginIdleSightCollisionBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (currentState == idling && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
+	{
+		//UE_LOG(LogTemp, Error, TEXT("begin overlap idle sight"));
+		currentState = aggroed;
+		GetWorldTimerManager().PauseTimer(EndWalkTimer);
+	}
 }
 
 void AEnemy::OnOverlapEndIdleSightCollisionBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (currentState == aggroed && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
+	{
+		//UE_LOG(LogTemp, Error, TEXT("end overlap idle sight"));
+		currentState = walking;
+		GetWorldTimerManager().UnPauseTimer(EndWalkTimer);
+	}
 }
 
 void AEnemy::OnOverlapBeginWalkSightCollisionBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (currentState == walking && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
+	{
+		//UE_LOG(LogTemp, Error, TEXT("begin overlap walk sight"));
+		currentState = aggroed;
+		GetWorldTimerManager().PauseTimer(EndWalkTimer);
+	}
 }
 
 void AEnemy::OnOverlapEndWalkSightCollisionBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (currentState == aggroed && OtherActor && OtherActor->IsA(AClawRemastered2Character::StaticClass()) && OtherComp->IsA(UCapsuleComponent::StaticClass()))
+	{
+		//UE_LOG(LogTemp, Error, TEXT("end overlap walk sight"));
+		currentState = walking;
+		GetWorldTimerManager().UnPauseTimer(EndWalkTimer);
+	}
 }
 
 void AEnemy::TurnRight()
