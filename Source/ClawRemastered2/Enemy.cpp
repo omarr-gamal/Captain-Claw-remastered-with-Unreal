@@ -51,10 +51,16 @@ AEnemy::AEnemy()
 	OfficerIdleSightCollisionBox->SetCollisionProfileName("Tr1igger");
 	OfficerIdleSightCollisionBox->SetupAttachment(RootComponent);
 
+	OfficerIdleSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginIdleSightCollisionBox);
+	OfficerIdleSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndIdleSightCollisionBox);
+
 	OfficerWalkSightCollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Officer Walk Sight"));
 	OfficerWalkSightCollisionBox->SetBoxExtent(FVector(32.0f, 32.0f, 60.0f));
 	OfficerWalkSightCollisionBox->SetCollisionProfileName("Trigger");
 	OfficerWalkSightCollisionBox->SetupAttachment(RootComponent);
+
+	OfficerWalkSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::OnOverlapBeginWalkSightCollisionBox);
+	OfficerWalkSightCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemy::OnOverlapEndWalkSightCollisionBox);
 
 	//OfficerSightCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemy::onClawSpotted);
 }
@@ -112,6 +118,22 @@ void AEnemy::Tick(float DeltaSeconds)
 	UpdateRotation();
 
 	UE_LOG(LogTemp, Error, TEXT("Value = %f"), walkDirection);
+}
+
+void AEnemy::OnOverlapBeginIdleSightCollisionBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+}
+
+void AEnemy::OnOverlapEndIdleSightCollisionBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+}
+
+void AEnemy::OnOverlapBeginWalkSightCollisionBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+}
+
+void AEnemy::OnOverlapEndWalkSightCollisionBox(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
 }
 
 void AEnemy::TurnRight()
