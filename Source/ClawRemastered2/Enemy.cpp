@@ -191,6 +191,7 @@ void AEnemy::TurnLeft()
 		patrols = 0;
 
 		currentState = idling;
+		OfficerIdleSightCollisionBox->GetOverlappingComponents();
 		GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, idlingDuration, false);
 
 		//UE_LOG(LogTemp, Error, TEXT("start idle"));
@@ -203,6 +204,24 @@ void AEnemy::TurnLeft()
 		walkDirection *= -1;
 
 		//UE_LOG(LogTemp, Error, TEXT("turn left"));
+	}
+}
+
+UPrimitiveComponent* AEnemy::CheckIfClawInSight()
+{
+	TSet<UPrimitiveComponent*> OverlappingComponents;
+
+	OfficerIdleSightCollisionBox->GetOverlappingComponents(OverlappingComponents);
+
+	for (auto& Component : OverlappingComponents)
+	{
+		if (Component->IsA(UCapsuleComponent::StaticClass()))
+		{
+			if (Component->GetOwner()->IsA(AClawRemastered2Character::StaticClass()))
+			{
+				return Component;
+			}
+		}
 	}
 }
 

@@ -121,6 +121,8 @@ protected:
 	void TurnRight();
 	void TurnLeft();
 
+	UPrimitiveComponent* CheckIfClawInSight();
+
 	void UpdateRotation();
 	void UpdateToClawCharacterDirection(UPrimitiveComponent* clawCapsule);
 
