@@ -40,8 +40,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animations)
 	class UPaperFlipbook* DeadAnimation;
 
-
-
 	enum State
 	{
 		walking,
@@ -114,7 +112,7 @@ private:
 	void DestroySelf();
 
 protected:
-	virtual void onClawDetected();
+	virtual void ActAggroed();
 
 	void UpdateCharacter();
 

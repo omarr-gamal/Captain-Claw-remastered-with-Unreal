@@ -102,7 +102,7 @@ void AEnemy::UpdateCharacter()
 		{
 			GetSprite()->SetFlipbook(AggroedAnimation);
 		}
-		onClawDetected();
+		ActAggroed();
 	}
 	//else if (currentState == dead) {
 	//	DesiredAnimation = DeadAnimation;
@@ -289,10 +289,11 @@ void AEnemy::HandleDeath()
 
 void AEnemy::DestroySelf()
 {
+	UE_LOG(LogTemp, Error, TEXT("destroyed.."));
 	this->Destroy();
 }
 
-void AEnemy::onClawDetected()
+void AEnemy::ActAggroed()
 {
 	//UE_LOG(LogTemp, Error, TEXT("claw Detected.."));
 
