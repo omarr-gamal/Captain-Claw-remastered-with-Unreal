@@ -191,7 +191,16 @@ void AEnemy::TurnLeft()
 		patrols = 0;
 
 		currentState = idling;
-		OfficerIdleSightCollisionBox->GetOverlappingComponents();
+		
+		UPrimitiveComponent* clawCapsuleComponent = CheckIfClawInSight();
+		if (clawCapsuleComponent)
+		{
+			UpdateToClawCharacterDirection(clawCapsuleComponent);
+
+			currentState = aggroed;
+			GetWorldTimerManager().PauseTimer(EndWalkTimer);
+		}
+			
 		GetWorldTimerManager().SetTimer(EndWalkTimer, this, &AEnemy::TurnRight, idlingDuration, false);
 
 		//UE_LOG(LogTemp, Error, TEXT("start idle"));
@@ -223,6 +232,8 @@ UPrimitiveComponent* AEnemy::CheckIfClawInSight()
 			}
 		}
 	}
+	
+	return nullptr;
 }
 
 void AEnemy::UpdateRotation()
