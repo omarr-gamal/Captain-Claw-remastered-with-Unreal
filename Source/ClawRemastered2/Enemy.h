@@ -84,6 +84,7 @@ private:
 	// 0 will result in no movement, 1 is right
 	// movement and -1 is left movement.
 	float movementDirection = 1.0f;
+	float deathJumpDirection = 1.0f;
 
 	FTimerHandle EndWalkTimer;
 

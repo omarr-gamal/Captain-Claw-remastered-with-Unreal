@@ -109,7 +109,7 @@ void AEnemy::UpdateCharacter()
 		{
 			GetSprite()->SetFlipbook(DeadAnimation);
 		}
-		AddMovementInput(FVector(walkDirection, 0.0f, 1.0f), 1);
+		AddMovementInput(FVector(deathJumpDirection, 0.0f, 0.0f), 1);
 	}
 	//else if (currentState == hurt) {
 	//	DesiredAnimation = HurtAnimation;
@@ -281,6 +281,10 @@ void AEnemy::SetRotationToLeft()
 
 void AEnemy::OnDamageTaken(float DamageAmount, const UDamageType* damageType, AController* InstigatedBy, AActor* DamageCauser)
 {
+	if (GetActorLocation().X - DamageCauser->GetActorLocation().X < 0) {
+		deathJumpDirection = -1.0f;
+	}
+	
 	if (OfficerHealth->GetHealth() <= 0)
 	{
 		HandleDeath();
