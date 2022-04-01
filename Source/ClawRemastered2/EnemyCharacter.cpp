@@ -53,7 +53,6 @@ AEnemyCharacter::AEnemyCharacter()
 	attackCollisionBox->SetCollisionProfileName("Trigger");
 	attackCollisionBox->SetupAttachment(RootComponent);
 
-	attackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnOverlapBegin);
 }
 
 
@@ -71,7 +70,6 @@ void AEnemyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			ClawCharacter = OtherActor;
 			StartSwording();
 		}
-		
 	}
 }
 
@@ -109,6 +107,7 @@ void AEnemyCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	attackCollisionBox->OnComponentBeginOverlap.AddDynamic(this, &AEnemyCharacter::OnOverlapBegin);
 	UE_LOG(LogTemp, Warning, TEXT("beginplay"));
 
 	SetActorRotation(FRotator(0.0f, 180.0f, 0.0f));
