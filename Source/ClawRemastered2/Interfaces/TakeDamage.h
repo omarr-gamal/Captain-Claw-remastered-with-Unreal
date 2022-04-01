@@ -22,5 +22,5 @@ class CLAWREMASTERED2_API ITakeDamage
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnDamageTaken(float DamageAmount, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser) = 0;
+	virtual void OnDamageTaken(float DamageAmount, const UDamageType* damageType, AController* InstigatedBy, AActor* DamageCauser) = 0;
 };

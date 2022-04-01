@@ -3,6 +3,7 @@
 
 #include "HealthComponent.h"
 #include "ClawGameMode.h"
+#include "Interfaces/TakeDamage.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
@@ -56,6 +57,12 @@ void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDam
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Health Component does not have a valid GameMode reference"));
 		}
+	}
+
+	if (GetOwner()->GetClass()->ImplementsInterface(UTakeDamage::StaticClass()))
+	{
+		ITakeDamage* DamageInterface = Cast<ITakeDamage>(GetOwner());
+		DamageInterface->OnDamageTaken(Damage, DamageType, InstigatedBy, DamageCauser);
 	}
 }
  

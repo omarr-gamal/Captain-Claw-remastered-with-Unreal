@@ -6,6 +6,7 @@
 #include "PaperCharacter.h"
 #include "HealthComponent.h"
 #include "Sound/SoundBase.h"
+#include "Interfaces/TakeDamage.h"
 #include "Enemy.generated.h"
 
 
@@ -15,7 +16,7 @@ class APaperSpriteActor;
  * 
  */
 UCLASS()
-class CLAWREMASTERED2_API AEnemy : public APaperCharacter
+class CLAWREMASTERED2_API AEnemy : public APaperCharacter, public ITakeDamage
 {
 	GENERATED_BODY()
 
@@ -112,6 +113,8 @@ private:
 	void DestroySelf();
 
 protected:
+	virtual void OnDamageTaken(float DamageAmount, const UDamageType* damageType, AController* InstigatedBy, AActor* DamageCauser) override;
+
 	virtual void ActAggroed();
 
 	void UpdateCharacter();

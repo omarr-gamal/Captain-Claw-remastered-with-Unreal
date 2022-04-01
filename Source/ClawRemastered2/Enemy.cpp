@@ -275,6 +275,14 @@ void AEnemy::SetRotationToLeft()
 	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
 }
 
+void AEnemy::OnDamageTaken(float DamageAmount, const UDamageType* damageType, AController* InstigatedBy, AActor* DamageCauser)
+{
+	if (OfficerHealth->GetHealth() <= 0)
+	{
+		HandleDeath();
+	}
+}
+
 void AEnemy::HandleDeath()
 {
 	currentState = dead;
