@@ -104,9 +104,13 @@ void AEnemy::UpdateCharacter()
 		}
 		ActAggroed();
 	}
-	//else if (currentState == dead) {
-	//	DesiredAnimation = DeadAnimation;
-	//}
+	else if (currentState == dead) {
+		if (CurrentAnimation != DeadAnimation)
+		{
+			GetSprite()->SetFlipbook(DeadAnimation);
+		}
+		AddMovementInput(FVector(walkDirection, 0.0f, 1.0f), 1);
+	}
 	//else if (currentState == hurt) {
 	//	DesiredAnimation = HurtAnimation;
 	//}
@@ -290,8 +294,10 @@ void AEnemy::HandleDeath()
 	UGameplayStatics::SpawnSound2D(this, DeathSound, 1.0f, 1.0f, 0.0f);
 
 	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AEnemy::DestroySelf, 0.6f, false);
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &AEnemy::DestroySelf, 1.6f, false);
+	GetWorldTimerManager().ClearTimer(EndWalkTimer);
 
+	Jump();
 	this->SetActorEnableCollision(false);
 }
 
