@@ -16,6 +16,7 @@
 #include "Camera/CameraComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "InputCoreTypes.h"
+#include "Enemy.h"
 #include "HealthComponent.h"
 #include "ClawGameMode.h"
 
@@ -90,6 +91,15 @@ AClawRemastered2Character::AClawRemastered2Character()
 	bReplicates = true;
 }
 
+void AClawRemastered2Character::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GameModeRef = Cast<AClawGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	clawCapsuleComponent = Cast<UCapsuleComponent>(RootComponent);
+	JumpMaxHoldTime = 2.0f;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Animation
@@ -260,7 +270,7 @@ void AClawRemastered2Character::DealDamage()
 	{
 		if (Component->IsA(UCapsuleComponent::StaticClass()))
 		{ 
-			if (Component->GetOwner()->IsA(AEnemyCharacter::StaticClass()) || Component->GetOwner()->IsA(ABlueOfficer::StaticClass()))
+			if (Component->GetOwner()->IsA(AEnemyCharacter::StaticClass()) || Component->GetOwner()->IsA(ABlueOfficer::StaticClass()) || Component->GetOwner()->IsA(AEnemy::StaticClass()))
 			{
 				UGameplayStatics::ApplyDamage(Component->GetOwner(), 300, GetOwner()->GetInstigatorController(), this, DamageType);
 			}
@@ -389,15 +399,6 @@ void AClawRemastered2Character::UpdateCharacter()
 			Controller->SetControlRotation(FRotator(0.0f, 0.0f, 0.0f));
 		}
 	}
-}
-
-void AClawRemastered2Character::BeginPlay()
-{
-	Super::BeginPlay();
-
-	GameModeRef = Cast<AClawGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-
-	clawCapsuleComponent = Cast<UCapsuleComponent>(RootComponent);
 }
 
 void AClawRemastered2Character::HandleDeath()

@@ -293,8 +293,6 @@ void AEnemy::OnDamageTaken(float DamageAmount, const UDamageType* damageType, AC
 
 void AEnemy::HandleDeath()
 {
-	currentState = dead;
-
 	UGameplayStatics::SpawnSound2D(this, DeathSound, 1.0f, 1.0f, 0.0f);
 
 	FTimerHandle UnusedHandle;
@@ -303,6 +301,8 @@ void AEnemy::HandleDeath()
 
 	Jump();
 	this->SetActorEnableCollision(false);
+
+	currentState = dead;
 }
 
 void AEnemy::DestroySelf()
@@ -317,5 +317,4 @@ void AEnemy::ActAggroed()
 
 	AddMovementInput(FVector(toClawCharacterDirection, 0.0f, 0.0f), 1);
 }
-
 
